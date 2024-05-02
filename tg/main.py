@@ -127,7 +127,7 @@ async def get_class(message: types.Message,state: FSMContext):
         await message.answer(f'Авторизация прошла успешно')
         await message.answer(f'Добро пожаловать в меню бота', reply_markup=inline_menu_buttons())
         logger.success(
-            f' {message.from_user.id} | {message.from_user.username} - login: {data["email"]} | password: {data["password"]}')
+            f' {message.from_user.id} | {message.from_user.username} - login: {data["email"]}')
 
         if check_user(user_id=message.from_user.id)[0] == False:
             logger.success('')
