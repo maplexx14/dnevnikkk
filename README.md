@@ -6,4 +6,4 @@ pip install psycopg2
 ```
 
 # База реализована на PostgreSQL
-# Бот написан на aiogram3
+@ Бот написан на aiogram3
