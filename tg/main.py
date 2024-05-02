@@ -1,3 +1,4 @@
+# Импорты
 import datetime
 from aiogram import Bot, Dispatcher, types
 from aiogram import executor
@@ -25,12 +26,13 @@ dp.middleware.setup(LoggingMiddleware())
 date = datetime.datetime.now().date()
 logger.add(f"../logs/{str(date)}.log")
 
+# Клавиатура с кнопкой "Назад"
 def back_markup_keyboard():
     back_markup = types.InlineKeyboardMarkup()
     back_but = types.InlineKeyboardButton(text='Назад', callback_data='back')
     back_markup.add(back_but)
     return back_markup
-
+# Клавиатура основного меню
 def inline_menu_buttons():
     menu_markup = types.InlineKeyboardMarkup()
     get_marks_button = types.InlineKeyboardButton(text='Отметки за четверть', callback_data='get_marks')
@@ -42,7 +44,10 @@ def inline_menu_buttons():
     chat_gpt_button = types.InlineKeyboardButton(text='Спросить нейросеть', callback_data='gpt')
     menu_markup.add(get_day_marks_button).add(get_week_marks_button).add(get_marks_button).add(get_average_marks_button).add(chat_gpt_button).add(get_rating_button)
     return menu_markup
-
+    
+# Логин через куку
+# Отправляется запрос с email и password
+# Получаем куки файл для входа
 async def login(email, password, user_id):
     start = time.time()
     cookies_path = Path(f'../cookies/{user_id}.json')
@@ -50,7 +55,7 @@ async def login(email, password, user_id):
     dnevnik.save_cookies(cookies_path)
     logger.info(f'{round(time.time() - start, 3)} | finished')
 
-
+# Ну это база 
 @dp.message_handler(commands=['menu'], state='*')
 async def menu(message: types.Message):
     await message.answer(f'Меню бота', reply_markup=inline_menu_buttons())
@@ -66,6 +71,8 @@ async def start(message: types.Message):
                         f'Для начала работы авторизируйся', reply_markup=auth_markup)
     await message.delete()
 
+# Старт авторизации
+# Все пункты берутся из соответствующих стейтов в utils.py
 @dp.callback_query_handler(text='auth', state='*')
 async def auth(callback: types.CallbackQuery):
     await callback.message.answer('Введи свою почту')
@@ -114,6 +121,9 @@ async def get_surname(message: types.Message,state: FSMContext):
     await message.delete()
     await message.answer('Введи свой класс')
     await Register_states.get_class.set()
+
+# Последний стейт
+# Вывод меню и начало полноценной работы
 @dp.message_handler(state=Register_states.get_class)
 async def get_class(message: types.Message,state: FSMContext):
     try:
@@ -138,15 +148,19 @@ async def get_class(message: types.Message,state: FSMContext):
     except Exception as e:
         logger.error(f' user_id: {message.from_user.id} | {message.from_user.username} - error: {e}')
 
+# Получение оценок с помощью куки файла полученного ранее
 @dp.callback_query_handler(text='get_marks', state='*')
 async def get_marks(callback: types.CallbackQuery):
     await callback.message.delete()
     marks = Dnevnik2.make_from_cookies_file(Path(f'../cookies/{callback.from_user.id}.json')).fetch_marks_for_current_quarter()
 
-    with open(f'../marks/{callback.from_user.id}-{date}-marks.json', 'w+', encoding='utf-8') as f1:
+    with open(f'../marks/{callback.from_user.id}-{date}-marks.json', 'w+', encoding='utf-8') as f1: # Дамп оценок из запроса
         json.dump(marks, f1, ensure_ascii=False, indent=2)
     f1.close()
-    if not marks == '':
+    # --------------------------------------------------
+    # Если ответ с запроса пустой, то переходим на автономный режим
+    # --------------------------------------------------
+    if not marks == '': 
         start = time.time()
         out_lines = []
         grouped = defaultdict(list)
@@ -176,6 +190,9 @@ async def get_marks(callback: types.CallbackQuery):
         await callback.message.answer('Нет оценок за четверть', reply_markup=back_markup_keyboard())
         logger.info(f'{round(time.time() - start, 3)} | finished')
         return
+    # --------------------------------------------------
+    # Если запрос пришел, то делаем все в штатном режиме
+    # --------------------------------------------------
     start = time.time()
     logger.info('Проблемы на сайте дневника')
     with open(f'../marks/{callback.from_user.id}-{date}-marks.json', 'r', encoding='utf-8') as f1:
@@ -200,6 +217,9 @@ async def get_marks(callback: types.CallbackQuery):
             result += str(i) + "\n"
 
     logger.success(f' {callback.from_user.id} | {callback.from_user.username} - menu_get_marks')
+    # Делаем от обратного
+    # По сути ускоряет работу бота 
+    # if not условие без else
     if not result == '':
         await callback.message.answer(
             'Вот твои оценки за четверть\n---------------------------------------\n' + result,
@@ -208,6 +228,10 @@ async def get_marks(callback: types.CallbackQuery):
         return
     await callback.message.answer('Нет оценок за четверть', reply_markup=back_markup_keyboard())
     logger.info(f'{round(time.time() - start, 3)} | finished')
+
+# Такое же получение оценок через запрос
+# В данном случае используется метод fetch_marks_for_period и передаем туде неделю
+# хз работает или нет)))
 @dp.callback_query_handler(text='get_marks_week', state='*')
 async def get_marks_week(callback: types.CallbackQuery):
     await callback.message.delete()
@@ -244,6 +268,8 @@ async def get_marks_week(callback: types.CallbackQuery):
             parse_mode='markdown', reply_markup=back_markup_keyboard())
         return
     await callback.message.answer('У тебя нет оценок за неделю', reply_markup=back_markup_keyboard())
+
+# Кнопка назад после каждого действия
 @dp.callback_query_handler(text='back', state='*')
 async def back(callback: types.CallbackQuery):
     await callback.message.delete()
@@ -253,31 +279,38 @@ async def back(callback: types.CallbackQuery):
 @dp.callback_query_handler(text='average_marks', state='*')
 async def get_marks_medium(callback: types.CallbackQuery):
     await callback.message.delete()
-
+    # Функция showAvg из src/showAverage
+    # Делает тоже самое, что и get_marks, но фильтрует
     avg = showAvg(callback.from_user.id)
     await callback.message.answer('Вот средние баллы по предметам\n---------------------------------------\n'
                                    + avg, parse_mode='HTML', reply_markup=back_markup_keyboard())
+
+# Запросы к нейронке
 @dp.callback_query_handler(text='gpt', state='*')
 async def get_gpt(callback: types.CallbackQuery):
     await callback.message.delete()
     back_reply_markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    back_but = types.KeyboardButton('Назад', )
+    back_but = types.KeyboardButton('Назад' )
     back_reply_markup.add(back_but)
     await callback.message.answer('Напиши свой вопрос', reply_markup=back_reply_markup)
+    # Запуск стейта, чтобы он брал все сообщения 
     await GPT_states.s_question.set()
 
 @dp.message_handler(state=GPT_states.s_question)
 async def ans_question(message: types.Message,state: FSMContext):
     if message.text == 'Назад':
-
+    
         await message.answer('Меню бота', reply_markup=inline_menu_buttons())
         await state.finish()
         return
     await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+    # Отправка в GPT
     resp = await send_question(message.text)
     await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
     await message.answer(resp)
-
+# Дефолт
+# Тоже самое, что и get_marks_week, но параметры другие
+# Также хз, что там по работоспособности XD
 @dp.callback_query_handler(text='get_marks_day', state='*')
 async def get_marks_day(callback: types.CallbackQuery):
     await callback.message.delete()
@@ -312,6 +345,8 @@ async def get_marks_day(callback: types.CallbackQuery):
             parse_mode='markdown', reply_markup=back_markup_keyboard())
         return
     await callback.message.answer('У тебя нет оценок за день', reply_markup=back_markup_keyboard())
+
+# Вывод ИПУ
 @dp.callback_query_handler(text='get_rating', state='*')
 async def get_users_rating(callback: types.CallbackQuery):
     await callback.message.delete()
@@ -340,6 +375,8 @@ async def get_users_rating(callback: types.CallbackQuery):
     await callback.message.answer(f'Твой ИПУ(Индекс Примерного Ученика): `{round(good_student_index,2)}`\n-----------------------------'
                                   f'---------\n'+''+list_of_champs, parse_mode='Markdown', reply_markup=back_markup_keyboard(),disable_web_page_preview=True)
     logger.info(f'{callback.from_user.id} - {round(time.time() - start, 3)} | finished')
+
+# Если запуск с основного файла 
 if __name__ == '__main__':
     init_db()
     executor.start_polling(dp, skip_updates=True)
