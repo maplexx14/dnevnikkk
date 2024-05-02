@@ -12,7 +12,7 @@ pip install psycopg2
 ```
 
  
-# Скрины работы
+## Скрины работы
 ![image](https://github.com/maplexx14/dnevnikkk/assets/78544420/22bef47b-d5f1-4a13-aa32-50ba995a46b0)<br>
 ![image](https://github.com/maplexx14/dnevnikkk/assets/78544420/7ce40874-f0a2-40e5-a743-879f632d6bf7)<br>
 ![image](https://github.com/maplexx14/dnevnikkk/assets/78544420/fccc01b7-cdc7-4ad5-9619-ebe93ef8db87)
