@@ -1,5 +1,5 @@
 # Dnevnik2-agent-bot 
-<img src = 'https://github.com/maplexx14/dnevnikkk/assets/78544420/f3318df4-2196-4896-b4bb-671392a0f308)' width = 400>
+<img src = 'https://github.com/maplexx14/dnevnikkk/assets/78544420/f3318df4-2196-4896-b4bb-671392a0f308)' width = 420>
 
 Бот создан для индивидуального проекта<br>
 Сбор оценок происходит с https://dnevnik2.petersburgedu.ru <br>
