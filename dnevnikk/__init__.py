@@ -87,8 +87,6 @@ class Dnevnik2:
             json.dump(cookies, f1, indent=2, ensure_ascii=True)
 
     def fetch_children_list(self) -> dict:
-        """Fetch the list of children for whom marks are tracked.
-        """
         path = '/api/journal/person/related-child-list'
         return self._fetch_json_for_path(path)
     def _fetch_json_for_path(self, path: str, params: Optional[Dict[str, Union[int, str]]] = None) -> dict:
@@ -98,11 +96,6 @@ class Dnevnik2:
             return res.json()
 
     def fetch_group_list(self, jurisdiction: int, institution: int, page: int = 1) -> dict:
-        """Fetch the list of groups where the children study.
-
-        jurisdiction and institutions ids can be taken from fetch_children_List result
-        ('.data.items[0].educations[0]')
-        """
         path = '/api/journal/group/related-group-list'
         params = {
             'p_page': page,
@@ -112,10 +105,6 @@ class Dnevnik2:
         return self._fetch_json_for_path(path, params=params)
 
     def fetch_period_list(self, group: int, page=1) -> dict:
-        """Fetch education periods for the given group.
-
-        group can be taken from fetch_group_list result
-        """
         path = '/api/group/group/get-list-period'
         params = {
             'p_group_ids[]': group,
