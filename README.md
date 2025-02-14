@@ -4,7 +4,7 @@
 Бот создан для индивидуального проекта<br>
 Сбор оценок происходит с https://dnevnik2.petersburgedu.ru <br>
 База реализована на PostgreSQL<br>
-Бот написан на aiogram3
+Взамиодействие с telegram API реализовано на aiogram3
 ## Установка зависимостей
 ```
 pip install aiogram
